@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  ibm-mq:
+    image: icr.io/ibm-messaging/mq:latest
+    container_name: ibm-mq
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD=password
+      - MQ_ADMIN_PASSWORD=admin
+    ports:
+      - "1414:1414"
+      - "9443:9443"
+    volumes:
+      - ./mq-config/20-queues.mqsc:/etc/mqm/20-queues.mqsc
+
+  postgres-producer:
+    image: postgres:15-alpine
+    container_name: postgres-producer
+    environment:
+      - POSTGRES_DB=producer_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+
+  postgres-inventory:
+    image: postgres:15-alpine
+    container_name: postgres-inventory
+    environment:
+      - POSTGRES_DB=inventory_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+
+  postgres-payment:
+    image: postgres:15-alpine
+    container_name: postgres-payment
+    environment:
+      - POSTGRES_DB=payment_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5434:5432"
+
+  postgres-notification:
+    image: postgres:15-alpine
+    container_name: postgres-notification
+    environment:
+      - POSTGRES_DB=notification_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5435:5432"
+
+  order-producer-service:
+    build:
+      context: ./order-producer-service
+    container_name: order-producer-service
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres-producer
+      - DB_PORT=5432
+      - MQ_HOST=ibm-mq
+      - MQ_PASSWORD=password
+    depends_on:
+      - postgres-producer
+      - ibm-mq
+
+  order-inventory-service:
+    build:
+      context: ./order-inventory-service
+    container_name: order-inventory-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=postgres-inventory
+      - DB_PORT=5432
+      - MQ_HOST=ibm-mq
+      - MQ_PASSWORD=password
+    depends_on:
+      - postgres-inventory
+      - ibm-mq
+
+  order-payment-service:
+    build:
+      context: ./order-payment-service
+    container_name: order-payment-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_HOST=postgres-payment
+      - DB_PORT=5432
+      - MQ_HOST=ibm-mq
+      - MQ_PASSWORD=password
+    depends_on:
+      - postgres-payment
+      - ibm-mq
+
+  order-notification-service:
+    build:
+      context: ./order-notification-service
+    container_name: order-notification-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_HOST=postgres-notification
+      - DB_PORT=5432
+      - MQ_HOST=ibm-mq
+      - MQ_PASSWORD=password
+    depends_on:
+      - postgres-notification
+      - ibm-mq
