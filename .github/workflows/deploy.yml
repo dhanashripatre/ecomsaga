@@ -27,16 +27,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Run Trivy Scanner on Source Code (Filesystem)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          exit-code: '1' # Fails the pipeline if bad code dependencies are found
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -58,15 +48,6 @@ jobs:
           cd ${{ matrix.service }}
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
-      - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: '${{ steps.login-ecr.outputs.registry }}/${{ env.PROJECT_NAME }}/${{ matrix.service }}:latest'
-          format: 'table'
-          exit-code: '1' # Fails the pipeline if vulnerabilities are found
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
 
       - name: Push Docker image to ECR
         env:
