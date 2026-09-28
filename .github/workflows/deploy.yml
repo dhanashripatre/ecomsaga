@@ -13,7 +13,12 @@ jobs:
   build-and-deploy:
     name: Build and Deploy Microservices
     runs-on: ubuntu-latest
-    
+
+    # Required for OIDC keyless authentication
+    permissions:
+      id-token: write
+      contents: read
+
     # We use a matrix to run this job in parallel for all 4 microservices
     strategy:
       matrix:
@@ -27,11 +32,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
