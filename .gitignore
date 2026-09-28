@@ -21,4 +21,12 @@ Thumbs.db
 *.tfstate.backup
 .terraform.tfstate.lock.info
 .terraform.lock.hcl
+*.auto.tfvars
+terraform.tfvars
 .envudadha
+
+#env variables
+.env
+
+# Monitoring
+observability/
