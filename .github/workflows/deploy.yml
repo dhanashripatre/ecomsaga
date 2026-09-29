@@ -15,7 +15,6 @@ jobs:
     name: Build and Deploy Microservices
     runs-on: ubuntu-latest
 
-
     # Required for OIDC keyless authentication
     permissions:
       id-token: write
@@ -37,7 +36,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::227091671010:role/ecom-saga-github-actions-role
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
