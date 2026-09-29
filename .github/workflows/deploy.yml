@@ -28,6 +28,7 @@ jobs:
           - order-inventory-service
           - order-payment-service
           - order-notification-service
+          
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
