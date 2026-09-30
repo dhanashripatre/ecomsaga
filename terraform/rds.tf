@@ -17,7 +17,7 @@ resource "aws_db_instance" "postgres" {
   username             = "postgres"
   # Pulling password directly from Secrets Manager data source might cause circular issues in some setups,
   # but assuming the secret exists or is updated externally. For best practices, pass via variable or SSM.
-  password             = jsondecode(aws_secretsmanager_secret_version.db_credentials.secret_string)["password"]
+  password             = aws_ssm_parameter.db_password.value
   
   db_subnet_group_name   = aws_db_subnet_group.default.name
   vpc_security_group_ids = [aws_security_group.db.id]

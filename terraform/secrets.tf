@@ -1,27 +1,27 @@
-resource "aws_secretsmanager_secret" "db_credentials" {
-  name                    = "${var.project_name}/${var.environment}/db-credentials"
-  description             = "PostgreSQL credentials"
-  recovery_window_in_days = 0 # Force delete for dev environments
+resource "aws_ssm_parameter" "db_username" {
+  name        = "/${var.project_name}/${var.environment}/db-username"
+  description = "PostgreSQL username"
+  type        = "String"
+  value       = var.db_username
 }
 
-resource "aws_secretsmanager_secret_version" "db_credentials" {
-  secret_id = aws_secretsmanager_secret.db_credentials.id
-  secret_string = jsonencode({
-    username = var.db_username
-    password = var.db_password
-  })
+resource "aws_ssm_parameter" "db_password" {
+  name        = "/${var.project_name}/${var.environment}/db-password"
+  description = "PostgreSQL password"
+  type        = "SecureString"
+  value       = var.db_password
 }
 
-resource "aws_secretsmanager_secret" "mq_credentials" {
-  name                    = "${var.project_name}/${var.environment}/mq-credentials"
-  description             = "IBM MQ App and Admin passwords"
-  recovery_window_in_days = 0
+resource "aws_ssm_parameter" "mq_app_password" {
+  name        = "/${var.project_name}/${var.environment}/mq-app-password"
+  description = "IBM MQ App password"
+  type        = "SecureString"
+  value       = var.mq_app_password
 }
 
-resource "aws_secretsmanager_secret_version" "mq_credentials" {
-  secret_id = aws_secretsmanager_secret.mq_credentials.id
-  secret_string = jsonencode({
-    mq_app_password   = var.mq_app_password
-    mq_admin_password = var.mq_admin_password
-  })
+resource "aws_ssm_parameter" "mq_admin_password" {
+  name        = "/${var.project_name}/${var.environment}/mq-admin-password"
+  description = "IBM MQ Admin password"
+  type        = "SecureString"
+  value       = var.mq_admin_password
 }

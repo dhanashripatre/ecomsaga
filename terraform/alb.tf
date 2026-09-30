@@ -31,11 +31,12 @@ resource "aws_lb_target_group" "producer" {
   target_type = "ip"
 
   health_check {
-    path                = "/api/producer/health"
+    path                = "/api/producer/actuator/health"
     healthy_threshold   = 3
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 10
+    matcher             = "200"
   }
 }
 

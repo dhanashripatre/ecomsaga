@@ -31,11 +31,13 @@ resource "aws_iam_role_policy" "ecs_secrets_policy" {
       {
         Effect = "Allow"
         Action = [
-          "secretsmanager:GetSecretValue"
+          "ssm:GetParameters"
         ]
         Resource = [
-          aws_secretsmanager_secret.db_credentials.arn,
-          aws_secretsmanager_secret.mq_credentials.arn
+          aws_ssm_parameter.db_username.arn,
+          aws_ssm_parameter.db_password.arn,
+          aws_ssm_parameter.mq_app_password.arn,
+          aws_ssm_parameter.mq_admin_password.arn
         ]
       }
     ]
@@ -93,10 +95,12 @@ resource "aws_iam_role_policy" "ec2_mq_secrets_policy" {
       {
         Effect = "Allow"
         Action = [
-          "secretsmanager:GetSecretValue"
+          "ssm:GetParameters"
         ]
         Resource = [
-          aws_secretsmanager_secret.mq_credentials.arn
+          aws_ssm_parameter.mq_app_password.arn,
+          aws_ssm_parameter.mq_admin_password.arn,
+          aws_ssm_parameter.db_password.arn
         ]
       }
     ]

@@ -3,8 +3,14 @@ resource "aws_ecs_cluster" "main" {
 
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "main" {
+  cluster_name = aws_ecs_cluster.main.name
+
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
 }
 
 resource "aws_cloudwatch_log_group" "microservices" {
@@ -37,7 +43,15 @@ resource "aws_ecs_task_definition" "microservices" {
       secrets = [
         {
           name      = "MQ_PASSWORD"
-          valueFrom = "${aws_secretsmanager_secret.mq_credentials.arn}:mq_app_password::"
+          valueFrom = aws_ssm_parameter.mq_app_password.arn
+        },
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = aws_ssm_parameter.db_password.arn
+        },
+        {
+          name      = "DB_USERNAME"
+          valueFrom = aws_ssm_parameter.db_username.arn
         }
       ]
       portMappings = [
@@ -61,7 +75,11 @@ resource "aws_ecs_service" "microservices" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.microservices[each.key].arn
   desired_count   = 1
-  launch_type     = "FARGATE"
+
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+  }
 
   network_configuration {
     subnets          = module.vpc.public_subnets

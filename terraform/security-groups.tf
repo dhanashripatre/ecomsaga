@@ -54,7 +54,28 @@ resource "aws_security_group" "db" {
     protocol        = "tcp"
     from_port       = 5432
     to_port         = 5432
-    security_groups = [aws_security_group.ecs_tasks.id, aws_security_group.mq.id]
+    security_groups = [aws_security_group.ecs_tasks.id, aws_security_group.mq.id, aws_security_group.adminer.id]
+  }
+}
+
+resource "aws_security_group" "adminer" {
+  name        = "${var.project_name}-adminer-sg"
+  description = "Allow inbound HTTP access to Adminer"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -77,13 +98,7 @@ resource "aws_security_group" "mq" {
     cidr_blocks = ["0.0.0.0/0"] # Admin console (ideally restrict to VPN/bastion in prod)
   }
 
-  ingress {
-    protocol    = "tcp"
-    from_port   = 22
-    to_port     = 22
-    cidr_blocks = ["0.0.0.0/0"] # Allow SSH for database tunneling
-  }
-  
+
   egress {
     protocol    = "-1"
     from_port   = 0

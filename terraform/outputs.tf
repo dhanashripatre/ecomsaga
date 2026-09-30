@@ -18,7 +18,8 @@ output "ecr_repository_urls" {
   value       = { for name, repo in aws_ecr_repository.services : name => repo.repository_url }
 }
 
-output "bastion_public_ip" {
-  description = "The public IP of the IBM MQ EC2 instance (used as Bastion Host for SSH tunneling)"
-  value       = aws_instance.ibm_mq.public_ip
+
+output "adminer_url" {
+  description = "The URL to access the Adminer database management UI"
+  value       = "http://${aws_instance.adminer.public_ip}"
 }
