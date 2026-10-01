@@ -28,5 +28,3 @@ terraform.tfvars
 #env variables
 .env
 
-# Monitoring
-observability/

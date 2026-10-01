@@ -87,13 +87,22 @@ resource "aws_ecs_service" "microservices" {
     assign_public_ip = true
   }
 
-  # If it's the producer service, we attach it to the ALB
+  # Attach each service to its own ALB target group
   dynamic "load_balancer" {
-    for_each = each.value.name == "order-producer-service" ? [1] : []
+    for_each = [1]
     content {
-      target_group_arn = aws_lb_target_group.producer.arn
-      container_name   = each.value.name
-      container_port   = each.value.port
+      target_group_arn = {
+        "order-producer-service"     = aws_lb_target_group.producer.arn
+        "order-inventory-service"    = aws_lb_target_group.inventory.arn
+        "order-payment-service"      = aws_lb_target_group.payment.arn
+        "order-notification-service" = aws_lb_target_group.notification.arn
+      }[each.value.name]
+      container_name = each.value.name
+      container_port = each.value.port
     }
   }
+
+  # All Spring Boot services need startup grace period before ALB health checks
+  # Producer gets 3 minutes (heavier), others get 2 minutes
+  health_check_grace_period_seconds = each.value.name == "order-producer-service" ? 180 : 120
 }

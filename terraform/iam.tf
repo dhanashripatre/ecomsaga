@@ -122,7 +122,29 @@ resource "aws_iam_role" "monitoring_role" {
 
 resource "aws_iam_role_policy_attachment" "monitoring_ecs_ro" {
   role       = aws_iam_role.monitoring_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess" 
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+}
+
+# Promtail needs to read CloudWatch Logs to ship them to Loki
+resource "aws_iam_role_policy" "monitoring_cloudwatch_logs" {
+  name = "${var.project_name}-monitoring-cloudwatch-logs"
+  role = aws_iam_role.monitoring_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:FilterLogEvents",
+          "logs:GetLogEvents"
+        ]
+        Resource = "arn:aws:logs:${var.aws_region}:*:log-group:/ecs/${var.project_name}-*:*"
+      }
+    ]
+  })
 }
 
 resource "aws_iam_instance_profile" "monitoring_profile" {

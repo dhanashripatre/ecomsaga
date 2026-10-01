@@ -118,6 +118,7 @@ resource "aws_lb_listener_rule" "inventory" {
 
   condition {
     path_pattern {
+      # /api/inventory/* covers API calls AND Swagger UI (/api/inventory/swagger-ui/*)
       values = ["/api/inventory/*"]
     }
   }
@@ -134,6 +135,7 @@ resource "aws_lb_listener_rule" "payment" {
 
   condition {
     path_pattern {
+      # /api/payment/* covers API calls AND Swagger UI (/api/payment/swagger-ui/*)
       values = ["/api/payment/*"]
     }
   }
@@ -150,6 +152,7 @@ resource "aws_lb_listener_rule" "notification" {
 
   condition {
     path_pattern {
+      # /api/notification/* covers API calls AND Swagger UI (/api/notification/swagger-ui/*)
       values = ["/api/notification/*"]
     }
   }
