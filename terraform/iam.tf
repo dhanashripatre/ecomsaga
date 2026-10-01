@@ -95,7 +95,8 @@ resource "aws_iam_role_policy" "ec2_mq_secrets_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ssm:GetParameters"
+          "ssm:GetParameters",
+          "ssm:GetParameter"
         ]
         Resource = [
           aws_ssm_parameter.mq_app_password.arn,
@@ -107,3 +108,24 @@ resource "aws_iam_role_policy" "ec2_mq_secrets_policy" {
   })
 }
 
+resource "aws_iam_role" "monitoring_role" {
+  name = "${var.project_name}-monitoring-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "monitoring_ecs_ro" {
+  role       = aws_iam_role.monitoring_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess" 
+}
+
+resource "aws_iam_instance_profile" "monitoring_profile" {
+  name = "${var.project_name}-monitoring-profile"
+  role = aws_iam_role.monitoring_role.name
+}

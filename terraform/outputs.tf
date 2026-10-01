@@ -23,3 +23,18 @@ output "adminer_url" {
   description = "The URL to access the Adminer database management UI"
   value       = "http://${aws_instance.adminer.public_ip}"
 }
+
+output "monitoring_prometheus_url" {
+  description = "The URL to access Prometheus"
+  value       = "http://${aws_instance.adminer.public_ip}:9090"
+}
+
+output "monitoring_grafana_url" {
+  description = "The URL to access Grafana"
+  value       = "http://${aws_instance.adminer.public_ip}:3000"
+}
+
+output "mq_public_ip" {
+  description = "The public IP of the IBM MQ EC2 instance"
+  value       = aws_instance.ibm_mq.public_ip
+}

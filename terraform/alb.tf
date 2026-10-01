@@ -40,6 +40,57 @@ resource "aws_lb_target_group" "producer" {
   }
 }
 
+resource "aws_lb_target_group" "inventory" {
+  name        = "${var.project_name}-inventory-tg"
+  port        = 8081
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/inventory/actuator/health"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 10
+    matcher             = "200"
+  }
+}
+
+resource "aws_lb_target_group" "payment" {
+  name        = "${var.project_name}-payment-tg"
+  port        = 8082
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/payment/actuator/health"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 10
+    matcher             = "200"
+  }
+}
+
+resource "aws_lb_target_group" "notification" {
+  name        = "${var.project_name}-notification-tg"
+  port        = 8083
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/notification/actuator/health"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 10
+    matcher             = "200"
+  }
+}
+
 resource "aws_lb_listener_rule" "producer" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 100
@@ -52,6 +103,54 @@ resource "aws_lb_listener_rule" "producer" {
   condition {
     path_pattern {
       values = ["/api/producer/*"]
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "inventory" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 101
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.inventory.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/inventory/*"]
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "payment" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 102
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.payment.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/payment/*"]
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "notification" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 103
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.notification.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/notification/*"]
     }
   }
 }

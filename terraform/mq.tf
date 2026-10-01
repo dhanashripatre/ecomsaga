@@ -25,6 +25,7 @@ resource "aws_instance" "ibm_mq" {
 
   user_data = <<-EOF
 #!/bin/bash
+# Force recreation to apply correct IAM permissions
 dnf update -y
 dnf install -y docker jq postgresql15
 systemctl start docker
@@ -40,14 +41,19 @@ export PGPASSWORD=$DB_PASS
 for db in inventory_db payment_db notification_db; do
   psql -h ${aws_db_instance.postgres.address} -U postgres -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" | grep -q 1 || psql -h ${aws_db_instance.postgres.address} -U postgres -d postgres -c "CREATE DATABASE $db;"
 done
+# Create MQSC configuration file to auto-create queues
+cat << 'MQSC' > /home/ec2-user/20-queues.mqsc
+${file("../mq-config/20-queues.mqsc")}
+MQSC
 
 docker run -d \
   --name ibm-mq \
   --restart always \
   -e LICENSE=accept \
   -e MQ_QMGR_NAME=QM1 \
-  -e MQ_APP_PASSWORD=$APP_PASS \
-  -e MQ_ADMIN_PASSWORD=$ADMIN_PASS \
+  -e MQ_APP_PASSWORD="$APP_PASS" \
+  -e MQ_ADMIN_PASSWORD="$ADMIN_PASS" \
+  -v /home/ec2-user/20-queues.mqsc:/etc/mqm/20-queues.mqsc \
   -p 1414:1414 -p 9443:9443 \
   icr.io/ibm-messaging/mq:latest
   EOF

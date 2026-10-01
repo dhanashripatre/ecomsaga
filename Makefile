@@ -35,7 +35,7 @@
 #  AWS / ECS
 #  make ecr-login       → authenticate Docker with ECR
 #  make ecs-deploy      → force a rolling update of all 4 ECS services
-#
+#  bash get-urls.sh - for all the urls
 # =============================================================================
 
 # ── Variables ─────────────────────────────────────────────────────────────────
